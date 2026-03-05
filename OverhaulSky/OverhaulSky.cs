@@ -11,8 +11,8 @@ using Timberborn.TimeSystem;
 using System.Reflection;
 
 public class OverhaulSky: IModStarter {
-	public void StartMod() {
-		Debug.Log(this.GetType().Name);
+	public void StartMod(IModEnvironment env) {
+		Debug.Log(GetType().Name);
 		var harmony = new Harmony("Robin.OverhaulSky");
 		harmony.PatchAll();
 	}
@@ -22,7 +22,7 @@ public class OverhaulSky: IModStarter {
 [Context("MapEditor")]
 class SkyConfigurator: IConfigurator {
 	public void Configure(IContainerDefinition c) {
-		Debug.Log(this.GetType().Name);
+		Debug.Log(GetType().Name);
 		c.Bind<Cam>().AsSingleton();
 		c.Bind<Sky>().AsSingleton();
 	}
@@ -76,28 +76,35 @@ class Sky(
 	);
 	GameObject sun = null!;
 	GameObject moon = null!;
+	GameObject horizon = null!;
 	public void Load() {
 		Debug.Log("Sky.Load");
 
-		sun = Icosphere.Create(3, 30);
+		sun = Icosphere.Create(3, 1);
 		sun.layer = Layers.IgnoreRaycastMask;
 		var sunMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
 		sunMaterial.color = new Color(230 / 255f, 220 / 255f, 140 / 255f);
 		sun.AddComponent<MeshRenderer>().material = sunMaterial;
+		sun.transform.localScale = new Vector3(30f, 30f, 30f);
 
-		var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OverhaulSky.moon.jpg");
-		var tex = new Texture2D(1, 1);
-		var bytes = new byte[stream.Length];
-		stream.Read(bytes);
-		tex.LoadImage(bytes);
-		stream.Dispose();
-
-		moon = Icosphere.Create(4, 22.5f, Quaternion.Euler(0, 0, tiltAngle));
+		moon = Icosphere.Create(4, 0.51f, Quaternion.Euler(0, 0, tiltAngle));
 		moon.layer = Layers.IgnoreRaycastMask;
 		var moonMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
 		moonMaterial.color = new Color(230 / 255f, 220 / 255f, 200 / 255f);
-		moonMaterial.mainTexture = tex;
+		moonMaterial.mainTexture = Utility.texture("OverhaulSky.moon.jpg");
 		moon.AddComponent<MeshRenderer>().material = moonMaterial;
+		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
+
+		horizon = Icosphere.Create(4, 0.51f, null, true);
+		horizon.SetActive(false);
+		horizon.layer = Layers.IgnoreRaycastMask;
+		var horizonMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+		//horizonMaterial.mainTexture = Utility.texture("OverhaulSky.cliff.png");
+		horizonMaterial.color = new Color(42 / 255f, 40 / 255f, 34 / 255f);
+		horizon.AddComponent<MeshRenderer>().material = horizonMaterial;
+		horizon.transform.localRotation = Quaternion.Euler(0, 0, 0 - 90);
+		horizon.transform.localPosition = new Vector3(0, 0 - 1.15f, 0);
+		horizon.transform.localScale = new Vector3(500, 500, 500);
 	}
 
 	public void LateUpdateSingleton() {
@@ -110,12 +117,12 @@ class Sky(
 	// assume permanant summer solstice lol
 
 	void Render() {
-		var mapCenter = new Vector3(mapSize.TerrainSize.x * 0.5f, 10, mapSize.TerrainSize.y * 0.5f);
+		var mapCenter = new Vector3(mapSize.TerrainSize.x * 0.5f, 0, mapSize.TerrainSize.y * 0.5f);
 		var cameraCenter = /*mapCenter*/new Vector3(cam.position.x, 0, cam.position.z);
 
 		var dayProgress = (
 			dayNightCycle.DayNumber +
-			dayNightCycle.FluidSecondsPassedToday / dayNightCycle.ConfiguredDayLengthInSeconds
+			dayNightCycle.FluidSecondsPassedToday / dayNightCycle.DayLengthInSeconds
 		);
 		//dayProgress *= 30;
 

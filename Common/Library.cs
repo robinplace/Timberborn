@@ -1,8 +1,16 @@
 using UnityEngine;
 
 class Icosphere {
-	public static GameObject Create(int recursionLevel, float radius = 1f, Quaternion? maybeTextureTilt = null) {
+	public static GameObject Create(
+		int recursionLevel,
+		float percent = 1,
+		Quaternion? maybeTextureTilt = null,
+		bool invert = false
+	) {
 		Quaternion textureTilt = maybeTextureTilt ?? Quaternion.identity;
+		var minX = 1 - percent * 2;
+
+		// ai code below
 
 		Vector3[] verts;
 		int[] tris;
@@ -24,7 +32,7 @@ class Icosphere {
 			new Vector3(-t,  0, -1),
 			new Vector3(-t,  0,  1)
 		};
-		for (int i = 0; i < vList.Count; i++) vList[i] = vList[i].normalized * radius;
+		for (int i = 0; i < vList.Count; i++) vList[i] = vList[i].normalized;
 
 		var faces = new System.Collections.Generic.List<int[]>
 		{
@@ -40,7 +48,7 @@ class Icosphere {
 		{
 			long key = ((long)System.Math.Min(a, b) << 32) | (long)System.Math.Max(a, b);
 			if (midpointCache.TryGetValue(key, out int idx)) return idx;
-			Vector3 m = ((vList[a] + vList[b]) * 0.5f).normalized * radius;
+			Vector3 m = ((vList[a] + vList[b]) * 0.5f).normalized;
 			idx = vList.Count;
 			vList.Add(m);
 			midpointCache[key] = idx;
@@ -68,7 +76,7 @@ class Icosphere {
 		var keptFaces = new System.Collections.Generic.List<int[]>();
 		foreach (var f in faces)
 		{
-			if (vList[f[0]].x < 0.01f || vList[f[1]].x < 0.01f || vList[f[2]].x < 0.01f)
+			if (vList[f[0]].x < minX || vList[f[1]].x < minX || vList[f[2]].x < minX)
 				continue;
 			keptFaces.Add(f);
 		}
@@ -76,9 +84,15 @@ class Icosphere {
 		tris = new int[keptFaces.Count * 3];
 		for (int i = 0; i < keptFaces.Count; i++)
 		{
-			tris[i * 3 + 0] = keptFaces[i][0];
-			tris[i * 3 + 1] = keptFaces[i][1];
-			tris[i * 3 + 2] = keptFaces[i][2];
+			if (invert) {
+				tris[i * 3 + 0] = keptFaces[i][2];
+				tris[i * 3 + 1] = keptFaces[i][1];
+				tris[i * 3 + 2] = keptFaces[i][0];
+			} else {
+				tris[i * 3 + 0] = keptFaces[i][0];
+				tris[i * 3 + 1] = keptFaces[i][1];
+				tris[i * 3 + 2] = keptFaces[i][2];
+			}
 		}
 
 		uvs = new Vector2[verts.Length];

@@ -17,8 +17,8 @@ using Timberborn.BlueprintSystem;
 using Timberborn.ModManagerScene;
 
 public class OverhaulCamera: IModStarter {
-	public void StartMod() {
-		Debug.Log(this.GetType().Name);
+	public void StartMod(IModEnvironment env) {
+		Debug.Log(GetType().Name);
 		var harmony = new Harmony("Robin.OverhaulCamera");
 		harmony.PatchAll();
 	}
@@ -28,7 +28,7 @@ public class OverhaulCamera: IModStarter {
 [Context("MapEditor")]
 class CameraConfigurator: IConfigurator {
 	public void Configure(IContainerDefinition c) {
-		Debug.Log(this.GetType().Name);
+		Debug.Log(GetType().Name);
 		c.Bind<Cam>().AsSingleton();
 		c.Bind<Nav>().AsSingleton();
 	}

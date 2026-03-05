@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
 		<EmbeddedResource Include="moon.jpg"/>
+		<EmbeddedResource Include="cliff.png"/>
 	</ItemGroup>
 	<Import Project="../Common.target" />
 </Project>

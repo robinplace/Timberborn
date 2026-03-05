@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="$(ModPath)/harmony_639651c/0Harmony.dll" Private="false"/>
+		<Reference Include="$(ModPath)/Harmony_2.4.1/0Harmony.dll" Private="false"/>
 		<Reference Include="$(DllPath)/Unity.*.dll" Publicize="true" Private="false"/>
 		<Reference Include="$(DllPath)/UnityEngine.*.dll" Publicize="true" Private="false"/>
 		<Reference Include="$(DllPath)/Timberborn.*.dll" Publicize="true" Private="false"/>

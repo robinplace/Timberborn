@@ -1,5 +1,4 @@
 
-
 /Users/robin/Library/Application Support/Steam/steamapps/common/Timberborn/Timberborn.app/Contents/Resources/Data/Managed
 
 consider taking out almost every pause
@@ -18,4 +17,4 @@ ant hill hard, dam storage
 	craters barely has level metal, is 192, okay dramatic form, sluice trick space
 	terraces has strenuous level metal, is 256, kinda okay dramatic form, water on top
 
-
+maybe pull beaver buddies into here

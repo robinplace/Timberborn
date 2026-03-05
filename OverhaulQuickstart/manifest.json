@@ -1,0 +1,10 @@
+{
+	"Name": "Overhaul Quickstart",
+	"Version": "0.3",
+	"Id": "Robin.OverhaulQuickstart",
+	"MinimumGameVersion": "0.0.0.0",
+	"Description": "Instantly loads the most recent save.",
+	"RequiredMods": [
+		{ "Id": "Harmony" }
+	]
+}

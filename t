@@ -51,13 +51,21 @@ case "$1" in
 		popd
 	;;"start")
 		echo "starting"
-		/Applications/Steam.app/Contents/MacOS/steam_osx -applaunch 1062090 -skipModManager
+		/Applications/Steam.app/Contents/MacOS/steam_osx -applaunch 1062090 # -skipModManager
 	;;"kill")
 		echo "killing"
 		killall Timberborn
 	;;"restart")
 		echo "restarting"
 		./t kill && ./t start || true
+	;;"link")
+		for dir in ./*/manifest.json(N); do
+			folder="${dir:h:t}"
+			here="$(pwd)"
+			pushd ~/Documents/Timberborn/Mods
+			ln -s "$here/build/$folder" . || true
+			popd
+		done
 	;;*)
 		print_help && exit 1
 esac

@@ -4,6 +4,7 @@ using Timberborn.SingletonSystem;
 using Timberborn.BlueprintSystem;
 using Timberborn.Rendering;
 using Timberborn.MapStateSystem;
+using System.Reflection;
 
 class Utility {
 	public delegate void Transformer(Transform transform);
@@ -24,6 +25,17 @@ class Utility {
 		var container = new GameObject();
 		crosshair.transform.parent = container.transform;
 		return container;
+	}
+	public static Texture2D texture(
+			string name
+	) {
+		var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
+		var tex = new Texture2D(1, 1);
+		var bytes = new byte[stream.Length];
+		stream.Read(bytes);
+		tex.LoadImage(bytes);
+		stream.Dispose();
+		return tex;
 	}
 }
 
@@ -46,7 +58,7 @@ class Cam(
 		ground = GameObject.CreatePrimitive(PrimitiveType.Quad);
 		ground.layer = Layers.IgnoreRaycastMask;
 		var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-		material.color = Color.black;
+		material.color = new Color(42 / 255f, 40 / 255f, 34 / 255f);
 		ground.GetComponent<Renderer>().material = material;
 		ground.transform.localRotation = Quaternion.Euler(0 - 90, 0, 0);
 	}
@@ -84,10 +96,10 @@ class Cam(
 
 			var planeArray = new Plane[] {
 				new Plane(Vector3.up, 0),
-				new Plane(Vector3.left, 0 - CameraService.FreeModeMapMargin),
-				new Plane(Vector3.left, mapSize.TerrainSize.x + CameraService.FreeModeMapMargin),
-				new Plane(Vector3.back, 0 - CameraService.FreeModeMapMargin),
-				new Plane(Vector3.back, mapSize.TerrainSize.y + CameraService.FreeModeMapMargin)
+				new Plane(Vector3.left, 0 - cameraServiceSpec.FreeModeMapMargin),
+				new Plane(Vector3.left, mapSize.TerrainSize.x + cameraServiceSpec.FreeModeMapMargin),
+				new Plane(Vector3.back, 0 - cameraServiceSpec.FreeModeMapMargin),
+				new Plane(Vector3.back, mapSize.TerrainSize.y + cameraServiceSpec.FreeModeMapMargin)
 			};
 
 			var minimumDistance = float.PositiveInfinity;

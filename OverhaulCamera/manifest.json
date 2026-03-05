@@ -1,6 +1,6 @@
 {
 	"Name": "Overhaul Pan, Orbit, Zoom",
-	"Version": "0.2",
+	"Version": "0.3",
 	"Id": "Robin.OverhaulCamera",
 	"MinimumGameVersion": "0.0.0.0",
 	"Description": "Rebuilds the camera mouse controls to match professional CAD standards. Game changer for playing on a trackpad.",

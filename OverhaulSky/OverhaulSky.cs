@@ -76,7 +76,6 @@ class Sky(
 	);
 	GameObject sun = null!;
 	GameObject moon = null!;
-	GameObject horizon = null!;
 	public void Load() {
 		Debug.Log("Sky.Load");
 
@@ -94,17 +93,6 @@ class Sky(
 		moonMaterial.mainTexture = Utility.texture("OverhaulSky.moon.jpg");
 		moon.AddComponent<MeshRenderer>().material = moonMaterial;
 		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
-
-		horizon = Icosphere.Create(4, 0.51f, null, true);
-		horizon.SetActive(false);
-		horizon.layer = Layers.IgnoreRaycastMask;
-		var horizonMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-		//horizonMaterial.mainTexture = Utility.texture("OverhaulSky.cliff.png");
-		horizonMaterial.color = new Color(42 / 255f, 40 / 255f, 34 / 255f);
-		horizon.AddComponent<MeshRenderer>().material = horizonMaterial;
-		horizon.transform.localRotation = Quaternion.Euler(0, 0, 0 - 90);
-		horizon.transform.localPosition = new Vector3(0, 0 - 1.15f, 0);
-		horizon.transform.localScale = new Vector3(500, 500, 500);
 	}
 
 	public void LateUpdateSingleton() {
@@ -127,6 +115,7 @@ class Sky(
 		//dayProgress *= 30;
 
 		var solarAngle = (dayProgress + 3.5f / 24f) * 360f;
+		// need to rotate stars along with this!
 
 		var up = Quaternion.LookRotation(Vector3.up);
 		upCrosshair.transform.localPosition = mapCenter;
@@ -172,7 +161,7 @@ class Sky(
 				Vector3.Angle(sunVector, moonVector) / 180 *
 				Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
 			);
-			sunService._sun.intensity = moonRelevance * 0.5f;
+			sunService._sun.intensity = moonRelevance * 0.5f * 0f;
 			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
 			sunService._sun.color = Color.white;
 		} else {

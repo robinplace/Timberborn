@@ -5,6 +5,7 @@ using Timberborn.BlueprintSystem;
 using Timberborn.Rendering;
 using Timberborn.MapStateSystem;
 using System.Reflection;
+using System.IO;
 
 class Utility {
 	public delegate void Transformer(Transform transform);
@@ -30,10 +31,10 @@ class Utility {
 			string name
 	) {
 		var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
+		var ms = new MemoryStream();
+		stream.CopyTo(ms);
 		var tex = new Texture2D(1, 1);
-		var bytes = new byte[stream.Length];
-		stream.Read(bytes);
-		tex.LoadImage(bytes);
+		tex.LoadImage(ms.ToArray());
 		stream.Dispose();
 		return tex;
 	}

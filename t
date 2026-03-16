@@ -22,12 +22,19 @@ help
 zparseopts -D -- h=help -help=help
 if [[ -v help[1] ]]; then print_help; exit; fi
 
-case "$1" in
-	"build")
+case "$1" in $"\0")
+	;;"build")
 		for dir in ./*/manifest.json(N); do
 			mod="${dir:h}"
 			pushd "./$mod"
 			dotnet build -p:Mod="$mod" || exit 1
+			popd
+		done
+	;;"clean")
+		for dir in ./*/manifest.json(N); do
+			mod="${dir:h}"
+			pushd "./$mod"
+			dotnet clean || exit 1
 			popd
 		done
 	;;"watch")
@@ -51,7 +58,7 @@ case "$1" in
 		popd
 	;;"start")
 		echo "starting"
-		/Applications/Steam.app/Contents/MacOS/steam_osx -applaunch 1062090 # -skipModManager
+		/Applications/Steam.app/Contents/MacOS/steam_osx -applaunch 1062090 -skipModManager
 	;;"kill")
 		echo "killing"
 		killall Timberborn

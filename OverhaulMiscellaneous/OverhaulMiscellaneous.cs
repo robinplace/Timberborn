@@ -4,12 +4,16 @@ using Timberborn.WaterSystemRendering;
 using Timberborn.WaterSystemUI;
 using Timberborn.UILayoutSystem;
 using Timberborn.ModManagerScene;
+using System.Runtime.InteropServices;
+using System;
 
 public class OverhaulMiscellaneous: IModStarter {
 	public void StartMod(IModEnvironment env) {
 		Debug.Log(GetType().Name);
 		var harmony = new Harmony("Robin.OverhaulMiscellaneous");
 		harmony.PatchAll();
+
+		Debug.Log($"runtime {RuntimeInformation.FrameworkDescription} environment {Environment.Version}");
 	}
 }
 

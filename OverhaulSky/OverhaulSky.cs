@@ -75,7 +75,7 @@ class Sky(
 		}
 	);
 	GameObject sun = null!;
-	GameObject moon = null!;
+	/*GameObject moon = null!;*/
 	public void Load() {
 		Debug.Log("Sky.Load");
 
@@ -86,13 +86,13 @@ class Sky(
 		sun.AddComponent<MeshRenderer>().material = sunMaterial;
 		sun.transform.localScale = new Vector3(30f, 30f, 30f);
 
-		moon = Icosphere.Create(4, 0.51f, Quaternion.Euler(0, 0, tiltAngle));
+		/*moon = Icosphere.Create(4, 0.51f, Quaternion.Euler(0, 0, tiltAngle));
 		moon.layer = Layers.IgnoreRaycastMask;
 		var moonMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
 		moonMaterial.color = new Color(230 / 255f, 220 / 255f, 200 / 255f);
 		moonMaterial.mainTexture = Utility.texture("OverhaulSky.moon.jpg");
 		moon.AddComponent<MeshRenderer>().material = moonMaterial;
-		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
+		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);*/
 	}
 
 	public void LateUpdateSingleton() {
@@ -143,11 +143,11 @@ class Sky(
 
 		sun.transform.localRotation = solarRotation * Quaternion.Euler(0, 90, 0);
 		sun.transform.localPosition = cameraCenter + sunVector * 800f;
-		moon.transform.localPosition = cameraCenter + moonVector * 600f;
+		/*moon.transform.localPosition = cameraCenter + moonVector * 600f;
 		moon.transform.localRotation = solarRotation * Quaternion.Euler(0, 0 - 90, 0);
 		moon.GetComponent<MeshRenderer>().material.mainTextureOffset = (
 			new Vector2((lunarAngle - solarAngle) / 360 + 0.5f, 0)
-		);
+		);*/
 
 		var transition = sunService._dayStageCycle.GetCurrentTransition();
 		sunService.UpdateColors(transition);
@@ -156,14 +156,14 @@ class Sky(
 			var sunRelevance = Mathf.Clamp(sunVector.y * 10, 0, 1);
 			sunService._sun.intensity *= sunRelevance;
 			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - sunVector);
-		} else if (moonVector.y > 0) {
+		/*} else if (moonVector.y > 0) {
 			var moonRelevance = (
 				Vector3.Angle(sunVector, moonVector) / 180 *
 				Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
 			);
 			sunService._sun.intensity = moonRelevance * 0.5f * 0f;
 			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
-			sunService._sun.color = Color.white;
+			sunService._sun.color = Color.white;*/
 		} else {
 			sunService._sun.intensity = 0;
 		}

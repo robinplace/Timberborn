@@ -42,7 +42,9 @@
 	<Target
 		Name="Restart"
 		AfterTargets="Copy"
+		Condition="'$(RESTART)' == 'true' and ('$(DOTNET_WATCH_ITERATION)' == '' or $(DOTNET_WATCH_ITERATION) > 1)"
 	>
+		<Message Text="trying to restart timberborn" Importance="High" />
 		<Exec Command="zsh ../t restart"/>
 	</Target>
 </Project>

@@ -24,10 +24,12 @@ if [[ -v help[1] ]]; then print_help; exit; fi
 
 case "$1" in $"\0")
 	;;"build")
+		zparseopts -D -- r=restart -restart=restart
 		for dir in ./*/manifest.json(N); do
 			mod="${dir:h}"
+			echo "./$mod"
 			pushd "./$mod"
-			dotnet build -p:Mod="$mod" || exit 1
+			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet build -v:d -p:Mod="$mod" || exit 1
 			popd
 		done
 	;;"clean")
@@ -38,12 +40,13 @@ case "$1" in $"\0")
 			popd
 		done
 	;;"watch")
+		zparseopts -D -- r=restart -restart=restart
 		free() { kill $(jobs -p) || true; }
 		trap free EXIT
 		for dir in ./*/manifest.json(N); do
 			mod="${dir:h}"
 			pushd "./$mod"
-			dotnet watch build -- -p:Mod="$mod" &
+			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet watch build -- -p:Mod="$mod" &
 			popd
 		done
 		wait

@@ -7,17 +7,20 @@ using Timberborn.MapStateSystem;
 using System.Reflection;
 using System.IO;
 
-class Utility {
+public class Utility
+{
 	public delegate void Transformer(Transform transform);
 	public static GameObject crosshair(
 		PrimitiveType? type = null,
 		Color? color = null,
 		Transformer? transformer = null
-	) {
+	)
+	{
 		var crosshair = GameObject.CreatePrimitive(type ?? PrimitiveType.Sphere);
 		crosshair.SetActive(false);
 		crosshair.layer = Layers.IgnoreRaycastMask;
-		if (transformer != null) {
+		if (transformer != null)
+		{
 			transformer(crosshair.transform);
 		}
 		var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
@@ -29,7 +32,8 @@ class Utility {
 	}
 	public static Texture2D texture(
 			string name
-	) {
+	)
+	{
 		var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
 		var ms = new MemoryStream();
 		stream.CopyTo(ms);
@@ -40,16 +44,18 @@ class Utility {
 	}
 }
 
-class Cam(
+public class Cam(
 	CameraService cameraService,
 	ISpecService specService,
 	MapSize mapSize
-) : ILoadableSingleton, ILateUpdatableSingleton {
+) : ILoadableSingleton, ILateUpdatableSingleton
+{
 	CameraServiceSpec cameraServiceSpec = null!;
 	GameObject crosshair = Utility.crosshair(PrimitiveType.Sphere, Color.white);
 	GameObject ground = null!;
 
-	public void Load() {
+	public void Load()
+	{
 		Debug.Log("Cam.Load");
 		cameraServiceSpec = specService.GetSingleSpec<CameraServiceSpec>();
 		cameraService._camera.farClipPlane = 2 * 1000f;
@@ -64,34 +70,40 @@ class Cam(
 		ground.transform.localRotation = Quaternion.Euler(0 - 90, 0, 0);
 	}
 
-	public void LateUpdateSingleton() {
+	public void LateUpdateSingleton()
+	{
 		ground.transform.localPosition = new Vector3(mapSize.TerrainSize.x / 2, 0 - 1.15f, mapSize.TerrainSize.y / 2);
 		ground.transform.localScale = new Vector3(mapSize.TerrainSize.x, mapSize.TerrainSize.y, 1);
 	}
 
 	public Camera camera => cameraService._camera;
-	public float distance {
+	public float distance
+	{
 		get => (
 			Mathf.Pow(cameraServiceSpec!.ZoomBase, cameraService.ZoomLevel) *
 			cameraServiceSpec!.BaseDistance
 		);
 	}
-	public Quaternion rotation {
+	public Quaternion rotation
+	{
 		get => Quaternion.Euler(
 			cameraService.VerticalAngle,
 			cameraService.HorizontalAngle,
 			0
 		);
-		set {
+		set
+		{
 			Debug.Log("value " + value * Vector3.forward);
 			Debug.Log("angle " + (Vector3.Angle(value * Vector3.forward, Vector3.up) - 90));
 			cameraService.VerticalAngle = Vector3.Angle(value * Vector3.forward, Vector3.up) - 90;
 			cameraService.HorizontalAngle = value.eulerAngles.y;
 		}
 	}
-	public Vector3 position {
+	public Vector3 position
+	{
 		get => cameraService.Target + rotation * Vector3.back * distance;
-		set {
+		set
+		{
 			var mapCenter = new Vector3(mapSize.TerrainSize.x * 0.5f, 0, mapSize.TerrainSize.y * 0.5f);
 			var ray = new Ray(value, rotation * Vector3.forward);
 
@@ -106,11 +118,14 @@ class Cam(
 			var minimumDistance = float.PositiveInfinity;
 			var mostCentralPoint = mapCenter;
 			var mostCentralPointOffset = 20f;
-			for (var i = 0; i < planeArray.Length; i++) {
-				if (planeArray[i].Raycast(ray, out var offset)) {
+			for (var i = 0; i < planeArray.Length; i++)
+			{
+				if (planeArray[i].Raycast(ray, out var offset))
+				{
 					var point = ray.GetPoint(offset);
 					var distance = Vector3.Distance(mapCenter, point);
-					if (distance < minimumDistance) {
+					if (distance < minimumDistance)
+					{
 						mostCentralPoint = point;
 						mostCentralPointOffset = offset;
 						minimumDistance = distance;

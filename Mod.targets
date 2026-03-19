@@ -1,0 +1,24 @@
+﻿<Project>
+	<Import Project="./Universal.targets" />
+
+	<Target
+		Name="Copy"
+		AfterTargets="Build"
+	>
+    <ItemGroup>
+      <Files Include="$(OutputPath)*.dll" />
+    </ItemGroup>
+		<MakeDir Directories="./mod"/>
+		<Copy SourceFiles="manifest.json" DestinationFiles="./mod/manifest.json"/>
+		<Copy SourceFiles="@(Files)" DestinationFolder="./mod"/>
+	</Target>
+
+	<Target
+		Name="Restart"
+		AfterTargets="Copy"
+		Condition="'$(RESTART)' == 'true' and ('$(DOTNET_WATCH_ITERATION)' == '' or $(DOTNET_WATCH_ITERATION) > 1)"
+	>
+		<Message Text="trying to restart timberborn" Importance="High" />
+		<Exec Command="zsh ../t restart"/>
+	</Target>
+</Project>

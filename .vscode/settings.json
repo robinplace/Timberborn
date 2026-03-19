@@ -1,4 +1,6 @@
 {
-	"editor.formatOnSave": true,
+	"[xml]": { "editor.formatOnSave": true },
+	"[csharp]": { "editor.formatOnSave": true },
+	"[json]": { "editor.formatOnSave": true },
 	"editor.tabSize": 2
 }

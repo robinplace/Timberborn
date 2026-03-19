@@ -1,12 +1,14 @@
 using UnityEngine;
 
-class Icosphere {
+public class Icosphere
+{
 	public static GameObject Create(
 		int recursionLevel,
 		float percent = 1,
 		Quaternion? maybeTextureTilt = null,
 		bool invert = false
-	) {
+	)
+	{
 		Quaternion textureTilt = maybeTextureTilt ?? Quaternion.identity;
 		var minX = 1 - percent * 2;
 
@@ -45,7 +47,8 @@ class Icosphere {
 
 		var midpointCache = new System.Collections.Generic.Dictionary<long, int>();
 
-		int GetMidpoint(int a, int b) {
+		int GetMidpoint(int a, int b)
+		{
 			long key = ((long)System.Math.Min(a, b) << 32) | (long)System.Math.Max(a, b);
 			if (midpointCache.TryGetValue(key, out int idx))
 				return idx;
@@ -56,9 +59,11 @@ class Icosphere {
 			return idx;
 		}
 
-		for (int i = 0; i < recursionLevel; i++) {
+		for (int i = 0; i < recursionLevel; i++)
+		{
 			var newFaces = new System.Collections.Generic.List<int[]>();
-			foreach (var f in faces) {
+			foreach (var f in faces)
+			{
 				int a = GetMidpoint(f[0], f[1]);
 				int b = GetMidpoint(f[1], f[2]);
 				int c = GetMidpoint(f[2], f[0]);
@@ -73,19 +78,24 @@ class Icosphere {
 		verts = vList.ToArray();
 
 		var keptFaces = new System.Collections.Generic.List<int[]>();
-		foreach (var f in faces) {
+		foreach (var f in faces)
+		{
 			if (vList[f[0]].x < minX || vList[f[1]].x < minX || vList[f[2]].x < minX)
 				continue;
 			keptFaces.Add(f);
 		}
 
 		tris = new int[keptFaces.Count * 3];
-		for (int i = 0; i < keptFaces.Count; i++) {
-			if (invert) {
+		for (int i = 0; i < keptFaces.Count; i++)
+		{
+			if (invert)
+			{
 				tris[i * 3 + 0] = keptFaces[i][2];
 				tris[i * 3 + 1] = keptFaces[i][1];
 				tris[i * 3 + 2] = keptFaces[i][0];
-			} else {
+			}
+			else
+			{
 				tris[i * 3 + 0] = keptFaces[i][0];
 				tris[i * 3 + 1] = keptFaces[i][1];
 				tris[i * 3 + 2] = keptFaces[i][2];
@@ -93,7 +103,8 @@ class Icosphere {
 		}
 
 		uvs = new Vector2[verts.Length];
-		for (int i = 0; i < verts.Length; i++) {
+		for (int i = 0; i < verts.Length; i++)
+		{
 			Vector3 n = verts[i].normalized;
 
 			// rotate the direction vector in 3D to tilt the texture mapping

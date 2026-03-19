@@ -5,7 +5,7 @@ cd "$(git rev-parse --show-toplevel)"
 
 print_help() {
 	cat <<help
-usage: ./t [options] [command]
+usage: ./tool [options] [command]
 
 options:
 	-h, --help  print this help message
@@ -55,7 +55,7 @@ case "$command" in $"\0")
 		pushd "./build"
 		for mod in "${mods[@]}"; do
 			pushd "./$mod"
-			zip "../$mod.zip" ./*
+			zip "../$mod.zip" ./mod/*
 			popd
 		done
 		popd
@@ -72,7 +72,7 @@ case "$command" in $"\0")
 		for mod in "${mods[@]}"; do
 			here="$(pwd)"
 			pushd ~/Documents/Timberborn/Mods
-			ln -s "$here/build/$mod" . || true
+			ln -s "$here/$mod/mod" "$mod" || true
 			popd
 		done
 	;;"format")

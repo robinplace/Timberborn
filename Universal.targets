@@ -1,4 +1,4 @@
-﻿<Project>
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
@@ -14,8 +14,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<DllPath>/Users/robin/Library/Application Support/Steam/steamapps/common/Timberborn/Timberborn.app/Contents/Resources/Data/Managed</DllPath>
-		<ModPath>/Users/robin/Documents/Timberborn/Mods</ModPath>
+		<DllPath>$(HOME)/Library/Application Support/Steam/steamapps/common/Timberborn/Timberborn.app/Contents/Resources/Data/Managed</DllPath>
+		<ModPath>$(HOME)/Documents/Timberborn/Mods</ModPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -30,25 +30,4 @@
 		<Reference Include="$(DllPath)/Bindito.*.dll" Publicize="true" Private="false"/>
 		<Reference Include="$(DllPath)/Newtonsoft.Json.dll" Publicize="true" Private="false"/>
 	</ItemGroup>
-
-	<Target
-		Name="Copy"
-		AfterTargets="Build"
-	>
-    <ItemGroup>
-      <Files Include="$(OutputPath)*.dll" />
-    </ItemGroup>
-		<MakeDir Directories="../build/$(Mod)"/>
-		<Copy SourceFiles="manifest.json" DestinationFiles="../build/$(Mod)/manifest.json"/>
-		<Copy SourceFiles="@(Files)" DestinationFolder="../build/$(Mod)"/>
-	</Target>
-
-	<Target
-		Name="Restart"
-		AfterTargets="Copy"
-		Condition="'$(RESTART)' == 'true' and ('$(DOTNET_WATCH_ITERATION)' == '' or $(DOTNET_WATCH_ITERATION) > 1)"
-	>
-		<Message Text="trying to restart timberborn" Importance="High" />
-		<Exec Command="zsh ../t restart"/>
-	</Target>
 </Project>

@@ -1,6 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+	<Import Project="../Mod.targets" />
+
 	<ItemGroup>
 		<EmbeddedResource Include="moon.jpg"/>
+    <ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
-	<Import Project="../Common.targets" />
 </Project>

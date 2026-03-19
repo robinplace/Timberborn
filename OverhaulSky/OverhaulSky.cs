@@ -9,7 +9,7 @@ using Timberborn.ModManagerScene;
 using Timberborn.SkySystem;
 using Timberborn.TimeSystem;
 
-public class OverhaulSky: IModStarter {
+public class OverhaulSky : IModStarter {
 	public void StartMod(IModEnvironment env) {
 		Debug.Log(GetType().Name);
 		var harmony = new Harmony("Robin.OverhaulSky");
@@ -19,7 +19,7 @@ public class OverhaulSky: IModStarter {
 
 [Context("Game")]
 [Context("MapEditor")]
-class SkyConfigurator: IConfigurator {
+class SkyConfigurator : IConfigurator {
 	public void Configure(IContainerDefinition c) {
 		Debug.Log(GetType().Name);
 		c.Bind<Cam>().AsSingleton();
@@ -32,7 +32,7 @@ class Sky(
 	Sun sunService,
 	MapSize mapSize,
 	DayStageCycle dayStageCycle
-): ILoadableSingleton, ILateUpdatableSingleton {
+) : ILoadableSingleton, ILateUpdatableSingleton {
 	GameObject upCrosshair = Utility.crosshair(
 		PrimitiveType.Cylinder,
 		Color.violet,
@@ -98,7 +98,7 @@ class Sky(
 		Render();
 	}
 
-	DayNightCycle dayNightCycle = (DayNightCycle) dayStageCycle._dayNightCycle;
+	DayNightCycle dayNightCycle = (DayNightCycle)dayStageCycle._dayNightCycle;
 	int tiltAngle = 30;
 	int latitudeAngle = 50;
 	// assume permanant summer solstice lol
@@ -155,14 +155,14 @@ class Sky(
 			var sunRelevance = Mathf.Clamp(sunVector.y * 10, 0, 1);
 			sunService._sun.intensity *= sunRelevance;
 			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - sunVector);
-		/*} else if (moonVector.y > 0) {
-			var moonRelevance = (
-				Vector3.Angle(sunVector, moonVector) / 180 *
-				Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
-			);
-			sunService._sun.intensity = moonRelevance * 0.5f * 0f;
-			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
-			sunService._sun.color = Color.white;*/
+			/*} else if (moonVector.y > 0) {
+				var moonRelevance = (
+					Vector3.Angle(sunVector, moonVector) / 180 *
+					Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
+				);
+				sunService._sun.intensity = moonRelevance * 0.5f * 0f;
+				sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
+				sunService._sun.color = Color.white;*/
 		} else {
 			sunService._sun.intensity = 0;
 		}

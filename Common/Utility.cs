@@ -44,7 +44,7 @@ class Cam(
 	CameraService cameraService,
 	ISpecService specService,
 	MapSize mapSize
-): ILoadableSingleton, ILateUpdatableSingleton {
+) : ILoadableSingleton, ILateUpdatableSingleton {
 	CameraServiceSpec cameraServiceSpec = null!;
 	GameObject crosshair = Utility.crosshair(PrimitiveType.Sphere, Color.white);
 	GameObject ground = null!;

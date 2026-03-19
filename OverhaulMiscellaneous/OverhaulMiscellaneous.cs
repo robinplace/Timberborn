@@ -12,7 +12,7 @@ using Mono.Cecil;
 using System.Collections.Generic;
 using MonoMod.Utils;
 
-public class OverhaulMiscellaneous: IModStarter {
+public class OverhaulMiscellaneous : IModStarter {
 	public void StartMod(IModEnvironment env) {
 		Debug.Log(GetType().Name);
 		var harmony = new Harmony("Robin.OverhaulMiscellaneous");
@@ -43,7 +43,8 @@ public class OverhaulMiscellaneous: IModStarter {
 			if (!cur.TryGotoNext(i => (
 				i.MatchStfld(out field_ref) ||
 				i.MatchCallvirt(out method_ref)
-			))) break;
+			)))
+				break;
 			if (field_ref != null) {
 				var field = field_ref.Resolve();
 				Debug.Log($"set field {field.DeclaringType.FullName}::{field.Name}");
@@ -57,38 +58,38 @@ public class OverhaulMiscellaneous: IModStarter {
 		}
 	}
 
-/*
-		if (method_set.Add(method_ref)) {
-			Debug.Log($"hook method {method.DeclaringType.FullName}::{method.Name}");
-			hook_set.Add(new ILHook(
-				method,
-				RecursiveManipulate
-			));
-		} else {
-			Debug.Log($"repeat method {method.DeclaringType.FullName}::{method.Name}");
-		}
-	readonly HashSet<ILHook> hook_set = [];
+	/*
+			if (method_set.Add(method_ref)) {
+				Debug.Log($"hook method {method.DeclaringType.FullName}::{method.Name}");
+				hook_set.Add(new ILHook(
+					method,
+					RecursiveManipulate
+				));
+			} else {
+				Debug.Log($"repeat method {method.DeclaringType.FullName}::{method.Name}");
+			}
+		readonly HashSet<ILHook> hook_set = [];
 
-	private void RecursiveManipulate(ILContext il) {
-		var cur = new ILCursor(il).Goto(0);
-		while (true) {
-			FieldReference? field_ref = null;
-			MethodReference? method_ref = null;
-			if (!cur.TryGotoNext(i => (
-				i.MatchStfld(out field_ref) ||
-				i.MatchCallvirt(out method_ref)
-			))) break;
-			if (field_ref != null) {
-				var field = field_ref.ResolveReflection();
-				Debug.Log($"set field {field.DeclaringType.FullName}::{field.Name}");
+		private void RecursiveManipulate(ILContext il) {
+			var cur = new ILCursor(il).Goto(0);
+			while (true) {
+				FieldReference? field_ref = null;
+				MethodReference? method_ref = null;
+				if (!cur.TryGotoNext(i => (
+					i.MatchStfld(out field_ref) ||
+					i.MatchCallvirt(out method_ref)
+				))) break;
+				if (field_ref != null) {
+					var field = field_ref.ResolveReflection();
+					Debug.Log($"set field {field.DeclaringType.FullName}::{field.Name}");
+				}
+				if (method_ref != null) {
+					var method = method_ref.ResolveReflection();
+					Debug.Log($"call virt {method.DeclaringType.FullName}::{method.Name}");
+					RecurseHook(method);
+				}
 			}
-			if (method_ref != null) {
-				var method = method_ref.ResolveReflection();
-				Debug.Log($"call virt {method.DeclaringType.FullName}::{method.Name}");
-				RecurseHook(method);
-			}
-		}
-	}*/
+		}*/
 }
 
 [HarmonyPatch]

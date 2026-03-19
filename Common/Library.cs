@@ -32,7 +32,8 @@ class Icosphere {
 			new Vector3(-t,  0, -1),
 			new Vector3(-t,  0,  1)
 		};
-		for (int i = 0; i < vList.Count; i++) vList[i] = vList[i].normalized;
+		for (int i = 0; i < vList.Count; i++)
+			vList[i] = vList[i].normalized;
 
 		var faces = new System.Collections.Generic.List<int[]>
 		{
@@ -44,10 +45,10 @@ class Icosphere {
 
 		var midpointCache = new System.Collections.Generic.Dictionary<long, int>();
 
-		int GetMidpoint(int a, int b)
-		{
+		int GetMidpoint(int a, int b) {
 			long key = ((long)System.Math.Min(a, b) << 32) | (long)System.Math.Max(a, b);
-			if (midpointCache.TryGetValue(key, out int idx)) return idx;
+			if (midpointCache.TryGetValue(key, out int idx))
+				return idx;
 			Vector3 m = ((vList[a] + vList[b]) * 0.5f).normalized;
 			idx = vList.Count;
 			vList.Add(m);
@@ -55,18 +56,16 @@ class Icosphere {
 			return idx;
 		}
 
-		for (int i = 0; i < recursionLevel; i++)
-		{
+		for (int i = 0; i < recursionLevel; i++) {
 			var newFaces = new System.Collections.Generic.List<int[]>();
-			foreach (var f in faces)
-			{
+			foreach (var f in faces) {
 				int a = GetMidpoint(f[0], f[1]);
 				int b = GetMidpoint(f[1], f[2]);
 				int c = GetMidpoint(f[2], f[0]);
-				newFaces.Add(new[]{f[0], a, c});
-				newFaces.Add(new[]{f[1], b, a});
-				newFaces.Add(new[]{f[2], c, b});
-				newFaces.Add(new[]{a, b, c});
+				newFaces.Add(new[] { f[0], a, c });
+				newFaces.Add(new[] { f[1], b, a });
+				newFaces.Add(new[] { f[2], c, b });
+				newFaces.Add(new[] { a, b, c });
 			}
 			faces = newFaces;
 		}
@@ -74,16 +73,14 @@ class Icosphere {
 		verts = vList.ToArray();
 
 		var keptFaces = new System.Collections.Generic.List<int[]>();
-		foreach (var f in faces)
-		{
+		foreach (var f in faces) {
 			if (vList[f[0]].x < minX || vList[f[1]].x < minX || vList[f[2]].x < minX)
 				continue;
 			keptFaces.Add(f);
 		}
 
 		tris = new int[keptFaces.Count * 3];
-		for (int i = 0; i < keptFaces.Count; i++)
-		{
+		for (int i = 0; i < keptFaces.Count; i++) {
 			if (invert) {
 				tris[i * 3 + 0] = keptFaces[i][2];
 				tris[i * 3 + 1] = keptFaces[i][1];
@@ -96,8 +93,7 @@ class Icosphere {
 		}
 
 		uvs = new Vector2[verts.Length];
-		for (int i = 0; i < verts.Length; i++)
-		{
+		for (int i = 0; i < verts.Length; i++) {
 			Vector3 n = verts[i].normalized;
 
 			// rotate the direction vector in 3D to tilt the texture mapping

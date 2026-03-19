@@ -16,7 +16,7 @@ using UnityEngine.InputSystem;
 using Timberborn.BlueprintSystem;
 using Timberborn.ModManagerScene;
 
-public class OverhaulCamera: IModStarter {
+public class OverhaulCamera : IModStarter {
 	public void StartMod(IModEnvironment env) {
 		Debug.Log(GetType().Name);
 		var harmony = new Harmony("Robin.OverhaulCamera");
@@ -26,7 +26,7 @@ public class OverhaulCamera: IModStarter {
 
 [Context("Game")]
 [Context("MapEditor")]
-class CameraConfigurator: IConfigurator {
+class CameraConfigurator : IConfigurator {
 	public void Configure(IContainerDefinition c) {
 		Debug.Log(GetType().Name);
 		c.Bind<Cam>().AsSingleton();
@@ -49,7 +49,7 @@ class Nav(
 	IThreadSafeWaterMap threadSafeWaterMap,
 	ILevelVisibilityService levelVisibilityService,
 	ISpecService specService
-): ILoadableSingleton, IInputProcessor {
+) : ILoadableSingleton, IInputProcessor {
 	GameObject crosshair = Utility.crosshair();
 	CameraServiceSpec? cameraServiceSpec;
 
@@ -58,7 +58,7 @@ class Nav(
 		inputService.AddInputProcessor(this);
 		cameraServiceSpec = specService.GetSingleSpec<CameraServiceSpec>();
 	}
-	
+
 	void TerrainHit(Ray worldRay, out Vector3? worldHit, out float worldDistance) {
 		var gridRay = CoordinateSystem.WorldToGrid(worldRay);
 		var terrainCoord = (
@@ -108,7 +108,7 @@ class Nav(
 			worldHit = worldRay.origin;
 		}
 	}
-	
+
 	NavMode? navMode;
 	Vector3? orbitOriginWorldPoint;
 	Vector2? orbitOriginalScreenPoint;

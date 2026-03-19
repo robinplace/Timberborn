@@ -2,5 +2,5 @@
 	<ItemGroup>
 		<EmbeddedResource Include="moon.jpg"/>
 	</ItemGroup>
-	<Import Project="../Common.target" />
+	<Import Project="../Common.targets" />
 </Project>

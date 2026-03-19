@@ -75,6 +75,10 @@ case "$command" in $"\0")
 			ln -s "$here/build/$mod" . || true
 			popd
 		done
+	;;"format")
+		for mod in "${mods[@]}"; do
+			dotnet format "$mod/$mod.csproj"
+		done
 	;;*)
 		print_help && exit 1
 esac

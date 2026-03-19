@@ -8,7 +8,7 @@ print_help() {
 usage: ./t [options] [command]
 
 options:
-  -h, --help  print this help message
+	-h, --help  print this help message
 
 commands:
 	build	   build all packages
@@ -19,32 +19,33 @@ commands:
 	kill	   kill timberborn
 help
 }
-zparseopts -D -- h=help -help=help
+zparseopts -D -M -- {h,-help}=help
 if [[ -v help[1] ]]; then print_help; exit; fi
 
-case "$1" in $"\0")
+mods=()
+for dir in ./*/manifest.json(N); do
+	mod="${dir:h:t}"
+	[[ "$mod" = "build" ]] && continue
+	mods+=("$mod")
+done
+
+command="$1"
+shift
+case "$command" in $"\0")
 	;;"build")
-		zparseopts -D -- r=restart -restart=restart
-		for dir in ./*/manifest.json(N); do
-			mod="${dir:h}"
-			echo "./$mod"
+		zparseopts -D -M -- {r,-restart}=restart
+		for mod in "${mods[@]}"; do
 			pushd "./$mod"
 			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet build -v:d -p:Mod="$mod" || exit 1
 			popd
 		done
 	;;"clean")
-		for dir in ./*/manifest.json(N); do
-			mod="${dir:h}"
-			pushd "./$mod"
-			dotnet clean || exit 1
-			popd
-		done
+  	git clean -fdX
 	;;"watch")
-		zparseopts -D -- r=restart -restart=restart
-		free() { kill $(jobs -p) || true; }
-		trap free EXIT
-		for dir in ./*/manifest.json(N); do
-			mod="${dir:h}"
+		zparseopts -D -M -- {r,-restart}=restart
+		function free { echo "killing"; kill -9 $(pgrep -P $$) || true; }
+		trap free INT TERM
+		for mod in "${mods[@]}"; do
 			pushd "./$mod"
 			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet watch build -- -p:Mod="$mod" &
 			popd
@@ -52,8 +53,7 @@ case "$1" in $"\0")
 		wait
 	;;"pack")
 		pushd "./build"
-		for dir in ./*/manifest.json(N); do
-			mod="${dir:h}"
+		for mod in "${mods[@]}"; do
 			pushd "./$mod"
 			zip "../$mod.zip" ./*
 			popd
@@ -69,11 +69,10 @@ case "$1" in $"\0")
 		echo "restarting"
 		./t kill && ./t start || true
 	;;"link")
-		for dir in ./*/manifest.json(N); do
-			folder="${dir:h:t}"
+		for mod in "${mods[@]}"; do
 			here="$(pwd)"
 			pushd ~/Documents/Timberborn/Mods
-			ln -s "$here/build/$folder" . || true
+			ln -s "$here/build/$mod" . || true
 			popd
 		done
 	;;*)

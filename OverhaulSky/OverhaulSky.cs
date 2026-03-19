@@ -8,7 +8,6 @@ using Timberborn.MapStateSystem;
 using Timberborn.ModManagerScene;
 using Timberborn.SkySystem;
 using Timberborn.TimeSystem;
-using System.Reflection;
 
 public class OverhaulSky: IModStarter {
 	public void StartMod(IModEnvironment env) {
@@ -75,7 +74,7 @@ class Sky(
 		}
 	);
 	GameObject sun = null!;
-	/*GameObject moon = null!;*/
+	GameObject moon = null!;
 	public void Load() {
 		Debug.Log("Sky.Load");
 
@@ -86,13 +85,13 @@ class Sky(
 		sun.AddComponent<MeshRenderer>().material = sunMaterial;
 		sun.transform.localScale = new Vector3(30f, 30f, 30f);
 
-		/*moon = Icosphere.Create(4, 0.51f, Quaternion.Euler(0, 0, tiltAngle));
+		moon = Icosphere.Create(4, 0.51f, Quaternion.Euler(0, 0, tiltAngle));
 		moon.layer = Layers.IgnoreRaycastMask;
 		var moonMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
 		moonMaterial.color = new Color(230 / 255f, 220 / 255f, 200 / 255f);
 		moonMaterial.mainTexture = Utility.texture("OverhaulSky.moon.jpg");
 		moon.AddComponent<MeshRenderer>().material = moonMaterial;
-		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);*/
+		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
 	}
 
 	public void LateUpdateSingleton() {
@@ -143,11 +142,11 @@ class Sky(
 
 		sun.transform.localRotation = solarRotation * Quaternion.Euler(0, 90, 0);
 		sun.transform.localPosition = cameraCenter + sunVector * 800f;
-		/*moon.transform.localPosition = cameraCenter + moonVector * 600f;
+		moon.transform.localPosition = cameraCenter + moonVector * 600f;
 		moon.transform.localRotation = solarRotation * Quaternion.Euler(0, 0 - 90, 0);
 		moon.GetComponent<MeshRenderer>().material.mainTextureOffset = (
 			new Vector2((lunarAngle - solarAngle) / 360 + 0.5f, 0)
-		);*/
+		);
 
 		var transition = sunService._dayStageCycle.GetCurrentTransition();
 		sunService.UpdateColors(transition);
@@ -167,17 +166,6 @@ class Sky(
 		} else {
 			sunService._sun.intensity = 0;
 		}
-
-		/*sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - sunVector(
-			sunVector.y > 0 ?
-			sunVector * 1200f : (
-				moonVector.y > 0 ?
-				moonVector * 1200f :
-				Vector3.down * 1200f
-			)
-		)*/;
-
-		//var percentX = inputService.MousePosition.x / Display.main.renderingWidth;
 	}
 }
 
@@ -201,6 +189,13 @@ class SkyPatch {
 			__instance.SetShadowDistance(distance);
 		}
 		return false;
+	}
+
+	// hide default stars
+	[HarmonyPostfix, HarmonyPatch(typeof(SkyboxPositioner), nameof(SkyboxPositioner.Load))]
+	static void SkyboxPositionerLoad(SkyboxPositioner __instance) {
+		Debug.Log(Shader.PropertyToID("_StarIntensity"));
+		__instance.SkyboxMaterial.SetFloat(Shader.PropertyToID("_StarSize"), 0);
 	}
 
 	// turn off default sun motion

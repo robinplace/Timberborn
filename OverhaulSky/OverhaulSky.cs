@@ -89,6 +89,7 @@ class Sky(
 	readonly GameObject star_empty = new();
 	readonly List<GameObject> star_list = [];
 	readonly List<GameObject> line_list = [];
+	readonly static int SKY_LAYER = 14;
 	public void Load() {
 		Debug.Log("Sky.Load");
 
@@ -97,6 +98,9 @@ class Sky(
 		var sunMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
 		sunMaterial.color = new Color(230 / 255f, 220 / 255f, 140 / 255f);
 		sun.AddComponent<MeshRenderer>().material = sunMaterial;
+		sun.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+		sun.GetComponent<MeshRenderer>().receiveShadows = false;
+		sun.layer = SKY_LAYER;
 		sun.transform.localScale = new Vector3(30f, 30f, 30f);
 
 		moon = Icosphere.Create(4, 0.51f, Quaternion.Euler(0, 0, tiltAngle));
@@ -106,6 +110,9 @@ class Sky(
 		var moon_stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OverhaulSky.moon.jpg");
 		moonMaterial.mainTexture = Utility.texture(moon_stream);
 		moon.AddComponent<MeshRenderer>().material = moonMaterial;
+		moon.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+		moon.GetComponent<MeshRenderer>().receiveShadows = false;
+		moon.layer = SKY_LAYER;
 		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
 
 		star_material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
@@ -140,6 +147,9 @@ class Sky(
 			//star.transform.localScale = Vector3.one * (float) Math.Max(0, Math.Pow(10, -0.4 * vmag)) * 100f;
 			star.transform.localScale = Vector3.one * (float) Math.Max(0, 7f - vmag) * 1.1f;
 			star.GetComponent<Renderer>().material = star_material;
+			star.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+			star.GetComponent<Renderer>().receiveShadows = false;
+			star.layer = SKY_LAYER;
 			star.transform.parent = star_empty.transform;
 			star_list.Add(star);
 			/*if (star_json.Value<string>("ADS") == "1477") {
@@ -179,12 +189,17 @@ class Sky(
 					line.transform.localRotation = rotation;
 					line.transform.localScale = new Vector3(length - GAP * 2, 1f, 1f);
 					line.GetComponent<Renderer>().material = constellation_material;
+					line.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+					line.GetComponent<Renderer>().receiveShadows = false;
+					line.layer = SKY_LAYER;
 					line.transform.parent = star_empty.transform;
 					line_list.Add(line);
 					Debug.Log($"from {last_number} to {number}");
 				}
 				last_number = number;
 			}
+			sunService._sun.cullingMask &= ~(1 << SKY_LAYER);
+			sunService._sun.renderingLayerMask &= ~(1 << SKY_LAYER);
 		}
 
 		Debug.Log($"fov {cameraService._camera.fieldOfView}");
@@ -251,49 +266,30 @@ class Sky(
 		var transition = sunService._dayStageCycle.GetCurrentTransition();
 		sunService.UpdateColors(transition);
 
-		//if (sunVector.y > 0) {
 		var sunRelevance = Mathf.Clamp(sunVector.y * 10, 0, 1);
 		sunService._sun.intensity *= sunRelevance;
 		sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - sunVector);
+		/*
+		} else if (moonVector.y > 0) {
+			var moonRelevance = (
+				Vector3.Angle(sunVector, moonVector) / 180 *
+				Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
+			);
+			sunService._sun.intensity = moonRelevance * 0.5f * 0f;
+			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
+			sunService._sun.color = Color.white;
+		} else {
+			sunService._sun.intensity = 0;
+		}
+		*/
+
 		star_material.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 1f - 0.95f * sunRelevance);
 		constellation_material.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 0.1f - 0.05f * sunRelevance);
-		/*
-	} else if (moonVector.y > 0) {
-		var moonRelevance = (
-			Vector3.Angle(sunVector, moonVector) / 180 *
-			Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
-		);
-		sunService._sun.intensity = moonRelevance * 0.5f * 0f;
-		sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
-		sunService._sun.color = Color.white;
-	} else {
-		sunService._sun.intensity = 0;
-	}*/
 	}
 }
 
 [HarmonyPatch]
 class SkyPatch {
-	// increase max shadow distance
-	[HarmonyPrefix, HarmonyPatch(typeof(ShadowDistanceUpdater), nameof(ShadowDistanceUpdater.LateUpdateSingleton))]
-	static bool LateUpdateSingleton(ShadowDistanceUpdater __instance) {
-		float distance = Mathf.Clamp(
-			Mathf.Max(Mathf.Max(
-				__instance.DistanceAtNormalizedScreenPoint(new Vector2(0f, 0f)),
-				__instance.DistanceAtNormalizedScreenPoint(new Vector2(0f, 1f))
-			), Mathf.Max(
-				__instance.DistanceAtNormalizedScreenPoint(new Vector2(1f, 0f)),
-				__instance.DistanceAtNormalizedScreenPoint(new Vector2(1f, 1f))
-			)),
-			0f,
-			150 * 5
-		);
-		if (Mathf.Abs(distance - __instance.GetShadowDistance()) > 0.1f) {
-			__instance.SetShadowDistance(distance);
-		}
-		return false;
-	}
-
 	// hide default stars
 	[HarmonyPostfix, HarmonyPatch(typeof(SkyboxPositioner), nameof(SkyboxPositioner.Load))]
 	static void SkyboxPositionerLoad(SkyboxPositioner __instance) {

@@ -216,6 +216,26 @@ class Nav(
 
 [HarmonyPatch]
 class CameraPatch {
+	// increase max shadow distance
+	/*[HarmonyPrefix, HarmonyPatch(typeof(ShadowDistanceUpdater), nameof(ShadowDistanceUpdater.LateUpdateSingleton))]
+	static bool LateUpdateSingleton(ShadowDistanceUpdater __instance) {
+		float distance = Mathf.Clamp(
+			Mathf.Max(Mathf.Max(
+				__instance.DistanceAtNormalizedScreenPoint(new Vector2(0f, 0f)),
+				__instance.DistanceAtNormalizedScreenPoint(new Vector2(0f, 1f))
+			), Mathf.Max(
+				__instance.DistanceAtNormalizedScreenPoint(new Vector2(1f, 0f)),
+				__instance.DistanceAtNormalizedScreenPoint(new Vector2(1f, 1f))
+			)),
+			0f,
+			150 * 5
+		);
+		if (Mathf.Abs(distance - __instance.GetShadowDistance()) > 0.1f) {
+			__instance.SetShadowDistance(distance);
+		}
+		return false;
+	}*/
+
 	// turn off default pan handler
 	[HarmonyPrefix, HarmonyPatch(typeof(MouseCameraController), nameof(MouseCameraController.MovementUpdate))]
 	static bool MovementUpdate() {

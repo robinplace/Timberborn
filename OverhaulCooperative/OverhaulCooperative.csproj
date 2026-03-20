@@ -1,0 +1,11 @@
+<Project>
+	<Import Project="../Mod.targets" />
+
+	<ItemGroup>
+		<PackageReference Include="System.Collections.Immutable" Version="9.0.0" />
+		<PackageReference Include="MonoMod.Core" Version="1.3.4" />
+		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.4" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.11.6" />
+		<PackageReference Include="MessagePack" Version="3.1.4" />
+	</ItemGroup>
+</Project>

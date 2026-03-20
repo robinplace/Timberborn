@@ -5,7 +5,7 @@ cd "$(git rev-parse --show-toplevel)"
 
 print_help() {
 	cat <<help
-usage: ./tool [options] [command]
+usage: ./toolool [options] [command]
 
 options:
 	-h, --help  print this help message
@@ -22,10 +22,15 @@ help
 zparseopts -D -M -- {h,-help}=help
 if [[ -v help[1] ]]; then print_help; exit; fi
 
+project=()
+for dir in ./*/*.csproj(N); do
+	project="${dir:h:t}"
+	projects+=("$project")
+done
+
 mods=()
 for dir in ./*/manifest.json(N); do
 	mod="${dir:h:t}"
-	[[ "$mod" = "build" ]] && continue
 	mods+=("$mod")
 done
 
@@ -43,14 +48,19 @@ case "$command" in $"\0")
   	git clean -fdX
 	;;"watch")
 		zparseopts -D -M -- {r,-restart}=restart
-		function free { echo "killing"; kill -9 $(pgrep -P $$) || true; }
-		trap free INT TERM
+		function free {
+			CH="$(pgrep -P $$)"
+			if [[ "$CH" != "" ]]; then echo "killing $(echo "$CH" | tr '\n' ' ')"; kill -9 $CH
+			else echo "killed"; fi
+		}
+		trap free INT TERM EXIT
 		for mod in "${mods[@]}"; do
 			pushd "./$mod"
 			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet watch build -- -p:Mod="$mod" &
 			popd
 		done
 		wait
+		free
 	;;"pack")
 		pushd "./build"
 		for mod in "${mods[@]}"; do
@@ -67,7 +77,7 @@ case "$command" in $"\0")
 		killall Timberborn
 	;;"restart")
 		echo "restarting"
-		./t kill && ./t start || true
+		./tool kill && ./tool start || true
 	;;"link")
 		for mod in "${mods[@]}"; do
 			here="$(pwd)"
@@ -76,8 +86,8 @@ case "$command" in $"\0")
 			popd
 		done
 	;;"format")
-		for mod in "${mods[@]}"; do
-			dotnet format "$mod/$mod.csproj"
+		for project in "${projects[@]}"; do
+			dotnet format "$project/$project.csproj"
 		done
 	;;*)
 		print_help && exit 1

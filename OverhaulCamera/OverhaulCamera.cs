@@ -29,7 +29,7 @@ public class OverhaulCamera : IModStarter {
 class CameraConfigurator : IConfigurator {
 	public void Configure(IContainerDefinition c) {
 		Debug.Log(GetType().Name);
-		c.Bind<Cam>().AsSingleton();
+		try { c.Bind<Cam>().AsSingleton(); } catch { }
 		c.Bind<Nav>().AsSingleton();
 	}
 }

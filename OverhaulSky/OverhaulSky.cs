@@ -8,6 +8,12 @@ using Timberborn.MapStateSystem;
 using Timberborn.ModManagerScene;
 using Timberborn.SkySystem;
 using Timberborn.TimeSystem;
+using System.Reflection;
+using Newtonsoft.Json;
+using System.IO;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System;
 
 public class OverhaulSky : IModStarter {
 	public void StartMod(IModEnvironment env) {
@@ -22,13 +28,14 @@ public class OverhaulSky : IModStarter {
 class SkyConfigurator : IConfigurator {
 	public void Configure(IContainerDefinition c) {
 		Debug.Log(GetType().Name);
-		c.Bind<Cam>().AsSingleton();
+		try { c.Bind<Cam>().AsSingleton(); } catch { }
 		c.Bind<Sky>().AsSingleton();
 	}
 }
 
 class Sky(
-	Cam cam,
+	//Cam cam,
+	CameraService cameraService,
 	Sun sunService,
 	MapSize mapSize,
 	DayStageCycle dayStageCycle
@@ -75,6 +82,8 @@ class Sky(
 	);
 	GameObject sun = null!;
 	GameObject moon = null!;
+	readonly GameObject star_empty = new();
+	readonly List<GameObject> star_list = [];
 	public void Load() {
 		Debug.Log("Sky.Load");
 
@@ -89,23 +98,56 @@ class Sky(
 		moon.layer = Layers.IgnoreRaycastMask;
 		var moonMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
 		moonMaterial.color = new Color(230 / 255f, 220 / 255f, 200 / 255f);
-		moonMaterial.mainTexture = Utility.texture("OverhaulSky.moon.jpg");
+		var moon_stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OverhaulSky.moon.jpg");
+		moonMaterial.mainTexture = Utility.texture(moon_stream);
 		moon.AddComponent<MeshRenderer>().material = moonMaterial;
 		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
+
+		var stars_json_stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OverhaulSky.bsc5.json");
+		var stars_json_serializer = JsonSerializer.CreateDefault();
+		var stars_json_stream_reader = new StreamReader(stars_json_stream);
+		var stars_json_text_reader = new JsonTextReader(stars_json_stream_reader);
+		JArray stars_json = (JArray) stars_json_serializer.Deserialize(stars_json_text_reader)!;
+		Debug.Log("the stars");
+		var star_material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+		star_material.color = new Color(140 / 255f, 180 / 255f, 240 / 255f);
+
+		foreach (var star_json in stars_json) {
+			var dec = Utility.DmsToDeg(star_json.Value<string>("Dec")!);
+			var ra = Utility.HmsToDeg(star_json.Value<string>("RA")!);
+			var vmag = float.Parse(star_json.Value<string>("Vmag")!);
+			var star = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			var vector = Quaternion.Euler(dec, ra, 0);
+			star.transform.localPosition = vector * Vector3.forward * 1200f;
+			//star.transform.localScale = Vector3.one * (float) Math.Max(0, Math.Pow(10, -0.4 * vmag)) * 100f;
+			star.transform.localScale = Vector3.one * (float) Math.Max(0, 8f - vmag) * 0.5f;
+			star.GetComponent<Renderer>().material = star_material;
+			star.transform.parent = star_empty.transform;
+			star_list.Add(star);
+			/*if (star_json.Value<string>("ADS") == "1477") {
+				var special_material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+				special_material.color = new Color(255 / 255f, 0 / 255f, 0 / 255f);
+				star.GetComponent<Renderer>().material = special_material;
+				star.transform.localScale = Vector3.one * 25f;
+			}*/
+		}
+
+		Debug.Log($"fov {cameraService._camera.fieldOfView}");
+		cameraService._camera.fieldOfView = 70f;
 	}
 
 	public void LateUpdateSingleton() {
 		Render();
 	}
 
-	DayNightCycle dayNightCycle = (DayNightCycle)dayStageCycle._dayNightCycle;
+	DayNightCycle dayNightCycle = (DayNightCycle) dayStageCycle._dayNightCycle;
 	int tiltAngle = 30;
 	int latitudeAngle = 50;
 	// assume permanant summer solstice lol
 
 	void Render() {
-		var mapCenter = new Vector3(mapSize.TerrainSize.x * 0.5f, 0, mapSize.TerrainSize.y * 0.5f);
-		var cameraCenter = /*mapCenter*/new Vector3(cam.position.x, 0, cam.position.z);
+		var camera_position = cameraService.Transform.position;
+		var map_center = new Vector3(mapSize.TerrainSize.x * 0.5f, 0, mapSize.TerrainSize.y * 0.5f);
 
 		var dayProgress = (
 			dayNightCycle.DayNumber +
@@ -114,39 +156,41 @@ class Sky(
 		//dayProgress *= 30;
 
 		var solarAngle = (dayProgress + 3.5f / 24f) * 360f;
-		// need to rotate stars along with this!
 
 		var up = Quaternion.LookRotation(Vector3.up);
-		upCrosshair.transform.localPosition = mapCenter;
+		upCrosshair.transform.localPosition = map_center;
 		upCrosshair.transform.localRotation = up * Quaternion.Euler(90, 0, 0);
 
 		var geographicNorth = Quaternion.LookRotation(Vector3.forward);
-		geographicNorthCrosshair.transform.localPosition = mapCenter;
+		geographicNorthCrosshair.transform.localPosition = map_center;
 		geographicNorthCrosshair.transform.localRotation = geographicNorth * Quaternion.Euler(90, 0, 0);
 
 		var planetaryNorth = geographicNorth * Quaternion.Euler(0 - latitudeAngle, 0, 0);
-		planetaryNorthCrosshair.transform.localPosition = mapCenter;
+		planetaryNorthCrosshair.transform.localPosition = map_center;
 		planetaryNorthCrosshair.transform.localRotation = planetaryNorth * Quaternion.Euler(90, 0, 0);
 
 		var solarRotation = planetaryNorth * Quaternion.Euler(0, 0, solarAngle) * Quaternion.Euler(90 - tiltAngle, 0, 0);
-		solarRotationCrosshair.transform.localPosition = mapCenter;
+		solarRotationCrosshair.transform.localPosition = map_center;
 		solarRotationCrosshair.transform.localRotation = solarRotation * Quaternion.Euler(90, 0, 0);
 		var sunVector = solarRotation * Vector3.forward;
 
 		var lunarAngle = solarAngle * 29 / 28 + 180;
 		//lunarAngle *= 3;
 		var lunarRotation = planetaryNorth * Quaternion.Euler(0, 0, lunarAngle) * Quaternion.Euler(90, 0, 0);
-		lunarRotationCrosshair.transform.localPosition = mapCenter;
+		lunarRotationCrosshair.transform.localPosition = map_center;
 		lunarRotationCrosshair.transform.localRotation = lunarRotation * Quaternion.Euler(90, 0, 0);
 		var moonVector = lunarRotation * Vector3.forward;
 
 		sun.transform.localRotation = solarRotation * Quaternion.Euler(0, 90, 0);
-		sun.transform.localPosition = cameraCenter + sunVector * 800f;
-		moon.transform.localPosition = cameraCenter + moonVector * 600f;
+		sun.transform.localPosition = camera_position + sunVector * 800f;
+		moon.transform.localPosition = camera_position + moonVector * 600f;
 		moon.transform.localRotation = solarRotation * Quaternion.Euler(0, 0 - 90, 0);
 		moon.GetComponent<MeshRenderer>().material.mainTextureOffset = (
 			new Vector2((lunarAngle - solarAngle) / 360 + 0.5f, 0)
 		);
+
+		star_empty.transform.localPosition = camera_position;
+		star_empty.transform.localRotation = planetaryNorth * Quaternion.Euler(0, 0, solarAngle) * Quaternion.Euler(-90, 0, 0);
 
 		var transition = sunService._dayStageCycle.GetCurrentTransition();
 		sunService.UpdateColors(transition);
@@ -155,14 +199,15 @@ class Sky(
 			var sunRelevance = Mathf.Clamp(sunVector.y * 10, 0, 1);
 			sunService._sun.intensity *= sunRelevance;
 			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - sunVector);
-			/*} else if (moonVector.y > 0) {
-				var moonRelevance = (
-					Vector3.Angle(sunVector, moonVector) / 180 *
-					Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
-				);
-				sunService._sun.intensity = moonRelevance * 0.5f * 0f;
-				sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
-				sunService._sun.color = Color.white;*/
+			/*
+		} else if (moonVector.y > 0) {
+			var moonRelevance = (
+				Vector3.Angle(sunVector, moonVector) / 180 *
+				Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
+			);
+			sunService._sun.intensity = moonRelevance * 0.5f * 0f;
+			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
+			sunService._sun.color = Color.white;*/
 		} else {
 			sunService._sun.intensity = 0;
 		}

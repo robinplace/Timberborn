@@ -2,7 +2,8 @@
 	<Import Project="../Mod.targets" />
 
 	<ItemGroup>
-		<EmbeddedResource Include="moon.jpg"/>
-    <ProjectReference Include="..\Common\Common.csproj" />
+		<EmbeddedResource Include="./moon.jpg"/>
+		<EmbeddedResource Include="./bsc5.json"/>
+    <ProjectReference Include="../Common/Common.csproj" />
 	</ItemGroup>
 </Project>

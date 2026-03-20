@@ -6,6 +6,9 @@ indent_size = tab
 tab_size = 2
 max_line_length = 120
 
+[*.json]
+max_line_length = 1200
+
 [*.cs]
 csharp_new_line_before_open_brace = none
 csharp_new_line_before_else = false

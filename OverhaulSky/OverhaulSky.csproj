@@ -4,6 +4,7 @@
 	<ItemGroup>
 		<EmbeddedResource Include="./moon.jpg"/>
 		<EmbeddedResource Include="./bsc5.json"/>
+		<EmbeddedResource Include="./const.json"/>
     <ProjectReference Include="../Common/Common.csproj" />
 	</ItemGroup>
 </Project>

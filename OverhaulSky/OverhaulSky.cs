@@ -14,6 +14,7 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System;
+using UnityEngine.UIElements.Collections;
 
 public class OverhaulSky : IModStarter {
 	public void StartMod(IModEnvironment env) {
@@ -84,6 +85,7 @@ class Sky(
 	GameObject moon = null!;
 	readonly GameObject star_empty = new();
 	readonly List<GameObject> star_list = [];
+	readonly List<GameObject> line_list = [];
 	public void Load() {
 		Debug.Log("Sky.Load");
 
@@ -103,24 +105,30 @@ class Sky(
 		moon.AddComponent<MeshRenderer>().material = moonMaterial;
 		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
 
-		var stars_json_stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OverhaulSky.bsc5.json");
-		var stars_json_serializer = JsonSerializer.CreateDefault();
-		var stars_json_stream_reader = new StreamReader(stars_json_stream);
-		var stars_json_text_reader = new JsonTextReader(stars_json_stream_reader);
-		JArray stars_json = (JArray) stars_json_serializer.Deserialize(stars_json_text_reader)!;
-		Debug.Log("the stars");
 		var star_material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
 		star_material.color = new Color(140 / 255f, 180 / 255f, 240 / 255f);
 
-		foreach (var star_json in stars_json) {
+		var star_map = new Dictionary<int, Vector3>();
+
+		Debug.Log("the stars");
+		var stars_stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OverhaulSky.bsc5.json");
+		var stars_json = JArray.Load(new JsonTextReader(new StreamReader(stars_stream)));
+		foreach (JObject star_json in stars_json) {
+			var hr = int.Parse(star_json.Value<string>("HR")!);
 			var dec = Utility.DmsToDeg(star_json.Value<string>("Dec")!);
 			var ra = Utility.HmsToDeg(star_json.Value<string>("RA")!);
+			var pm_dec = float.Parse(star_json.Value<string>("pmDE")!) / 3600f;
+			var pm_ra = float.Parse(star_json.Value<string>("pmRA")!) / 3600f;
 			var vmag = float.Parse(star_json.Value<string>("Vmag")!);
 			var star = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			var vector = Quaternion.Euler(dec, ra, 0);
+			int YEARS_IN_FUTURE = 20 * 1000;
+			var vector = Quaternion.Euler(dec + pm_dec * YEARS_IN_FUTURE, ra + pm_ra * YEARS_IN_FUTURE, 0);
 			star.transform.localPosition = vector * Vector3.forward * 1200f;
+			if (hr > 0) {
+				star_map.Add(hr, star.transform.localPosition);
+			}
 			//star.transform.localScale = Vector3.one * (float) Math.Max(0, Math.Pow(10, -0.4 * vmag)) * 100f;
-			star.transform.localScale = Vector3.one * (float) Math.Max(0, 8f - vmag) * 0.5f;
+			star.transform.localScale = Vector3.one * (float) Math.Max(0, 7f - vmag) * 1.1f;
 			star.GetComponent<Renderer>().material = star_material;
 			star.transform.parent = star_empty.transform;
 			star_list.Add(star);
@@ -132,6 +140,33 @@ class Sky(
 			}*/
 		}
 
+		Debug.Log("the constellations");
+		var consts_stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OverhaulSky.const.json");
+		var consts_json = JArray.Load(new JsonTextReader(new StreamReader(consts_stream)));
+		foreach (var const_json in consts_json) {
+			var point_list = const_json.Value<JArray>("line")!;
+			int? last_number = null;
+			foreach (var point in point_list) {
+				var number = point.Value<int>();
+				if (last_number != null) {
+					var position = star_map.Get((int) last_number)!;
+					var next_position = star_map.Get(number)!;
+					var rotation = Quaternion.FromToRotation(Vector3.left, next_position - position);
+					var line = GameObject.CreatePrimitive(PrimitiveType.Cube);
+					var length = Vector3.Distance(position, next_position);
+					float GAP = 10;
+					line.transform.localPosition = position + rotation * Vector3.left * length / 2f;
+					line.transform.localRotation = rotation;
+					line.transform.localScale = new Vector3(length - GAP * 2, 0.3f, 0.3f);
+					line.GetComponent<Renderer>().material = star_material;
+					line.transform.parent = star_empty.transform;
+					line_list.Add(line);
+					Debug.Log($"from {last_number} to {number}");
+				}
+				last_number = number;
+			}
+		}
+
 		Debug.Log($"fov {cameraService._camera.fieldOfView}");
 		cameraService._camera.fieldOfView = 70f;
 	}
@@ -140,9 +175,9 @@ class Sky(
 		Render();
 	}
 
-	DayNightCycle dayNightCycle = (DayNightCycle) dayStageCycle._dayNightCycle;
-	int tiltAngle = 30;
-	int latitudeAngle = 50;
+	readonly DayNightCycle dayNightCycle = (DayNightCycle) dayStageCycle._dayNightCycle;
+	readonly int tiltAngle = 30;
+	readonly int latitudeAngle = 50;
 	// assume permanant summer solstice lol
 
 	void Render() {

@@ -41,22 +41,24 @@ case "$command" in $"\0")
 		zparseopts -D -M -- {r,-restart}=restart
 		for mod in "${mods[@]}"; do
 			pushd "./$mod"
-			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet build -v:d -p:MOD="$mod" || exit 1
+			dotnet build -v:d -p:MOD="$mod" &
 			popd
 		done
+		wait
+		[[ -n $restart ]] && ./tool restart
 	;;"clean")
   	git clean -fdX
 	;;"watch")
 		zparseopts -D -M -- {r,-restart}=restart
 		function free {
-			CH="$(pgrep -P $$)"
-			if [[ "$CH" != "" ]]; then echo "killing $(echo "$CH" | tr '\n' ' ')"; kill -9 $CH
+			CH="$(pgrep -P $$ | tr '\n' ' ')"
+			if [[ "$CH" != "" ]]; then echo "killing $CH"; kill $(pgrep -P $$)
 			else echo "killed"; fi
 		}
 		trap free INT TERM EXIT
 		for mod in "${mods[@]}"; do
 			pushd "./$mod"
-			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet watch build -- -p:MOD="$mod" &
+			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet watch build --non-interactive -- -p:MOD="$mod" &
 			popd
 		done
 		wait

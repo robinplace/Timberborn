@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System;
 using UnityEngine.UIElements.Collections;
+using UnityEngine.Rendering;
 
 public class OverhaulSky : IModStarter {
 	public void StartMod(IModEnvironment env) {
@@ -83,6 +84,8 @@ class Sky(
 	);
 	GameObject sun = null!;
 	GameObject moon = null!;
+	Material star_material = null!;
+	Material constellation_material = null!;
 	readonly GameObject star_empty = new();
 	readonly List<GameObject> star_list = [];
 	readonly List<GameObject> line_list = [];
@@ -105,8 +108,15 @@ class Sky(
 		moon.AddComponent<MeshRenderer>().material = moonMaterial;
 		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
 
-		var star_material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-		star_material.color = new Color(140 / 255f, 180 / 255f, 240 / 255f);
+		star_material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+		star_material.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 1f);
+		star_material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+		star_material.SetFloat("_Surface", 1);
+		star_material.SetFloat("_Blend", 0);
+		star_material.SetFloat("_SrcBlend", (float) BlendMode.SrcAlpha);
+		star_material.SetFloat("_DstBlend", (float) BlendMode.OneMinusSrcAlpha);
+		star_material.SetFloat("_ZWrite", 0);
+		star_material.renderQueue = (int) RenderQueue.Transparent;
 
 		var star_map = new Dictionary<int, Vector3>();
 
@@ -140,6 +150,16 @@ class Sky(
 			}*/
 		}
 
+		constellation_material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+		constellation_material.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 0.2f);
+		constellation_material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+		constellation_material.SetFloat("_Surface", 1);
+		constellation_material.SetFloat("_Blend", 0);
+		constellation_material.SetFloat("_SrcBlend", (float) BlendMode.SrcAlpha);
+		constellation_material.SetFloat("_DstBlend", (float) BlendMode.OneMinusSrcAlpha);
+		constellation_material.SetFloat("_ZWrite", 0);
+		constellation_material.renderQueue = (int) RenderQueue.Transparent;
+
 		Debug.Log("the constellations");
 		var consts_stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OverhaulSky.const.json");
 		var consts_json = JArray.Load(new JsonTextReader(new StreamReader(consts_stream)));
@@ -154,11 +174,11 @@ class Sky(
 					var rotation = Quaternion.FromToRotation(Vector3.left, next_position - position);
 					var line = GameObject.CreatePrimitive(PrimitiveType.Cube);
 					var length = Vector3.Distance(position, next_position);
-					float GAP = 10;
+					float GAP = 15;
 					line.transform.localPosition = position + rotation * Vector3.left * length / 2f;
 					line.transform.localRotation = rotation;
-					line.transform.localScale = new Vector3(length - GAP * 2, 0.3f, 0.3f);
-					line.GetComponent<Renderer>().material = star_material;
+					line.transform.localScale = new Vector3(length - GAP * 2, 1f, 1f);
+					line.GetComponent<Renderer>().material = constellation_material;
 					line.transform.parent = star_empty.transform;
 					line_list.Add(line);
 					Debug.Log($"from {last_number} to {number}");
@@ -224,28 +244,31 @@ class Sky(
 			new Vector2((lunarAngle - solarAngle) / 360 + 0.5f, 0)
 		);
 
+		var star_angle = solarAngle * 364 / 365;
 		star_empty.transform.localPosition = camera_position;
-		star_empty.transform.localRotation = planetaryNorth * Quaternion.Euler(0, 0, solarAngle) * Quaternion.Euler(-90, 0, 0);
+		star_empty.transform.localRotation = planetaryNorth * Quaternion.Euler(0, 0, star_angle) * Quaternion.Euler(-90, 0, 0);
 
 		var transition = sunService._dayStageCycle.GetCurrentTransition();
 		sunService.UpdateColors(transition);
 
-		if (sunVector.y > 0) {
-			var sunRelevance = Mathf.Clamp(sunVector.y * 10, 0, 1);
-			sunService._sun.intensity *= sunRelevance;
-			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - sunVector);
-			/*
-		} else if (moonVector.y > 0) {
-			var moonRelevance = (
-				Vector3.Angle(sunVector, moonVector) / 180 *
-				Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
-			);
-			sunService._sun.intensity = moonRelevance * 0.5f * 0f;
-			sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
-			sunService._sun.color = Color.white;*/
-		} else {
-			sunService._sun.intensity = 0;
-		}
+		//if (sunVector.y > 0) {
+		var sunRelevance = Mathf.Clamp(sunVector.y * 10, 0, 1);
+		sunService._sun.intensity *= sunRelevance;
+		sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - sunVector);
+		star_material.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 1f - 0.95f * sunRelevance);
+		constellation_material.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 0.1f - 0.05f * sunRelevance);
+		/*
+	} else if (moonVector.y > 0) {
+		var moonRelevance = (
+			Vector3.Angle(sunVector, moonVector) / 180 *
+			Mathf.Clamp(0 - sunVector.y * 10, 0, 1)
+		);
+		sunService._sun.intensity = moonRelevance * 0.5f * 0f;
+		sunService._sun.transform.localRotation = Quaternion.LookRotation(Vector3.zero - moonVector);
+		sunService._sun.color = Color.white;
+	} else {
+		sunService._sun.intensity = 0;
+	}*/
 	}
 }
 

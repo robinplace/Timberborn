@@ -6,17 +6,22 @@ using Timberborn.UILayoutSystem;
 using Timberborn.ModManagerScene;
 using System.Runtime.InteropServices;
 using System;
-using Timberborn.TickSystem;
-using MonoMod.Cil;
-using Mono.Cecil;
-using System.Collections.Generic;
-using MonoMod.Utils;
+using Timberborn.GameSaveRepositorySystem;
+using System.Reflection;
 
 public class OverhaulMiscellaneous : IModStarter {
 	public void StartMod(IModEnvironment env) {
 		Debug.Log(GetType().Name);
 		var harmony = new Harmony("Robin.OverhaulMiscellaneous");
 		harmony.PatchAll();
+
+		Debug.Log(typeof(GameSaveRepository));
+		Debug.Log(typeof(GameSaveRepository)
+			.GetField(nameof(GameSaveRepository.ExperimentalSavesDir), BindingFlags.NonPublic | BindingFlags.Static));
+
+		typeof(GameSaveRepository)
+			.GetField(nameof(GameSaveRepository.ExperimentalSavesDir), BindingFlags.NonPublic | BindingFlags.Static)
+			.SetValue(null, "Saves");
 
 		Debug.Log($"runtime {RuntimeInformation.FrameworkDescription} environment {Environment.Version}");
 	}

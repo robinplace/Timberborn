@@ -80,7 +80,8 @@ case "$command" in $"\0")
 		killall Timberborn
 	;;"restart")
 		echo "restarting"
-		./tool kill && ./tool start || true
+		./tool kill || true
+		./tool start || true
 	;;"link")
 		for mod in "${mods[@]}"; do
 			here="$(pwd)"

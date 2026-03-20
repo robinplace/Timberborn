@@ -41,7 +41,7 @@ case "$command" in $"\0")
 		zparseopts -D -M -- {r,-restart}=restart
 		for mod in "${mods[@]}"; do
 			pushd "./$mod"
-			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet build -v:d -p:Mod="$mod" || exit 1
+			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet build -v:d -p:MOD="$mod" || exit 1
 			popd
 		done
 	;;"clean")
@@ -56,22 +56,23 @@ case "$command" in $"\0")
 		trap free INT TERM EXIT
 		for mod in "${mods[@]}"; do
 			pushd "./$mod"
-			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet watch build -- -p:Mod="$mod" &
+			RESTART="$([[ -n $restart ]] && echo true || echo false)" dotnet watch build -- -p:MOD="$mod" &
 			popd
 		done
 		wait
 		free
 	;;"pack")
-		pushd "./build"
 		for mod in "${mods[@]}"; do
-			pushd "./$mod"
-			zip "../$mod.zip" ./mod/*
+			pushd "./$mod/mod"
+			zip "../../$mod.zip" ./$mod/*
 			popd
 		done
 		popd
 	;;"start")
+		zparseopts -D -M -- {m,-menu}=menu
+		SKIP="$([[ -n $menu ]] && echo "" || echo "-skipModManager")"
 		echo "starting"
-		/Applications/Steam.app/Contents/MacOS/steam_osx -applaunch 1062090 -skipModManager
+		/Applications/Steam.app/Contents/MacOS/steam_osx -applaunch 1062090 $SKIP
 	;;"kill")
 		echo "killing"
 		killall Timberborn
@@ -82,7 +83,8 @@ case "$command" in $"\0")
 		for mod in "${mods[@]}"; do
 			here="$(pwd)"
 			pushd ~/Documents/Timberborn/Mods
-			ln -s "$here/$mod/mod" "$mod" || true
+			rm "$mod" || true
+			ln -s "$here/$mod/mod/$mod" "$mod" || true
 			popd
 		done
 	;;"format")

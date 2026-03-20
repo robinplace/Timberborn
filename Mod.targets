@@ -8,9 +8,10 @@
     <ItemGroup>
       <Files Include="$(OutputPath)*.dll" />
     </ItemGroup>
-		<MakeDir Directories="./mod"/>
-		<Copy SourceFiles="manifest.json" DestinationFiles="./mod/manifest.json"/>
-		<Copy SourceFiles="@(Files)" DestinationFolder="./mod"/>
+		<MakeDir Directories="./mod/$(MOD)"/>
+		<Copy SourceFiles="manifest.json" DestinationFOlder="./mod/$(MOD)"/>
+		<Copy SourceFiles="$(OutputPath)/$(MOD).dll" DestinationFolder="./mod/$(MOD)"/>
+		<Copy SourceFiles="$(OutputPath)/Common.dll" DestinationFolder="./mod/$(MOD)" Condition="Exists('$(OutputPath)/Common.dll')"/>
 	</Target>
 
 	<Target

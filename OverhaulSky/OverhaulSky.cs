@@ -194,7 +194,6 @@ class Sky(
 					line.layer = SKY_LAYER;
 					line.transform.parent = star_empty.transform;
 					line_list.Add(line);
-					Debug.Log($"from {last_number} to {number}");
 				}
 				last_number = number;
 			}

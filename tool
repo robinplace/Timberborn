@@ -69,7 +69,6 @@ case "$command" in $"\0")
 			zip "../../$mod.zip" ./$mod/*
 			popd
 		done
-		popd
 	;;"start")
 		zparseopts -D -M -- {m,-menu}=menu
 		SKIP="$([[ -n $menu ]] && echo "" || echo "-skipModManager")"

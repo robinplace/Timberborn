@@ -19,7 +19,9 @@ class QuickstartPatch {
 	[HarmonyPrefix, HarmonyPatch(typeof(MainMenuInitializer), nameof(MainMenuInitializer.ShowWelcomeScreen))]
 	static bool ShowWelcomeScreen(MainMenuInitializer __instance) {
 		__instance.ShowMainMenuPanel();
-		//__instance._mainMenuPanel.LoadMostRecentSave();
+		if (Utility.DEBUG) {
+			__instance._mainMenuPanel.LoadMostRecentSave();
+		}
 		return false;
 	}
 

@@ -8,6 +8,8 @@ using System.Runtime.InteropServices;
 using System;
 using Timberborn.GameSaveRepositorySystem;
 using System.Reflection;
+using Timberborn.StatusSystem;
+using Timberborn.Emptying;
 
 public class OverhaulMiscellaneous : IModStarter {
 	public void StartMod(IModEnvironment env) {
@@ -50,6 +52,14 @@ class MiscellaneousPatch {
 	// turn off panel unpause
 	[HarmonyPrefix, HarmonyPatch(typeof(OverlayPanelSpeedLocker), nameof(OverlayPanelSpeedLocker.OnPanelHidden))]
 	static bool OnPanelHidden() {
+		return false;
+	}
+
+	// hide certain warnings
+	[HarmonyPrefix, HarmonyPatch(typeof(Emptiable), nameof(Emptiable.Awake))]
+	static bool IsStatusVisible(Emptiable __instance) {
+		__instance._emptyStatusToggle = new StatusToggle(StatusSpecification.Create("Empty", __instance._loc.T(Emptiable.EmptyingInProgressLocKey)), isPriorityStatus: true);
+		__instance.DisableComponent();
 		return false;
 	}
 }

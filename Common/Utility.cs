@@ -9,6 +9,8 @@ using System.Text.RegularExpressions;
 using System;
 
 public class Utility {
+	public static bool DEBUG = true;
+
 	public delegate void Transformer(Transform transform);
 
 	public static float DmsToDeg(string s) {
@@ -35,7 +37,7 @@ public class Utility {
 		Transformer? transformer = null
 	) {
 		var crosshair = GameObject.CreatePrimitive(type ?? PrimitiveType.Sphere);
-		crosshair.SetActive(false);
+		crosshair.SetActive(DEBUG);
 		crosshair.layer = Layers.IgnoreRaycastMask;
 		if (transformer != null) {
 			transformer(crosshair.transform);
@@ -46,6 +48,20 @@ public class Utility {
 		var container = new GameObject();
 		crosshair.transform.parent = container.transform;
 		return container;
+	}
+
+	public static GameObject ray(
+		Color? color = null,
+		float? thickness = null
+	) {
+		return crosshair(
+			PrimitiveType.Cylinder,
+			color,
+			transform => {
+				transform.localScale = new Vector3(thickness ?? 0.3f, 100, thickness ?? 0.3f);
+				transform.localPosition = new Vector3(0, 100, 0);
+			}
+		);
 	}
 
 	public static Texture2D texture(

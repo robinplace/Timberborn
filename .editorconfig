@@ -20,3 +20,5 @@ csharp_new_line_between_query_expression_clauses = true
 csharp_preserve_single_line_statements = false
 csharp_preserve_single_line_blocks = true
 csharp_space_after_cast = true
+dotnet_diagnostic.IDE0017.severity=silent # initialization
+dotnet_diagnostic.IDE1006.severity=silent # method case

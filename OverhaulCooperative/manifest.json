@@ -1,0 +1,8 @@
+{
+	"Name": "Overhaul Cooperative",
+	"Version": "0.5",
+	"Id": "Robin.OverhaulCooperative",
+	"MinimumGameVersion": "0.0.0.0",
+	"Description": "Cooperative play.",
+	"RequiredMods": [{ "Id": "Harmony" }]
+}

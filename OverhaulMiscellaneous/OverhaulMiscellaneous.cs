@@ -10,6 +10,9 @@ using Timberborn.GameSaveRepositorySystem;
 using System.Reflection;
 using Timberborn.StatusSystem;
 using Timberborn.Emptying;
+using Bindito.Core;
+using Timberborn.SingletonSystem;
+using Timberborn.CameraSystem;
 
 public class OverhaulMiscellaneous : IModStarter {
 	public void StartMod(IModEnvironment env) {
@@ -26,6 +29,23 @@ public class OverhaulMiscellaneous : IModStarter {
 			.SetValue(null, "Saves");
 
 		Debug.Log($"runtime {RuntimeInformation.FrameworkDescription} environment {Environment.Version}");
+	}
+}
+
+[Context("Game")]
+[Context("MapEditor")]
+class MiscellaneousConfigurator : IConfigurator {
+	public void Configure(IContainerDefinition c) {
+		Debug.Log(GetType().Name);
+		c.Bind<Miscellaneous>().AsSingleton();
+	}
+}
+
+class Miscellaneous(
+	CameraService camera_service
+) : ILoadableSingleton {
+	public void Load() {
+		camera_service._camera.fieldOfView = Mathf.Max(70f, camera_service._camera.fieldOfView);
 	}
 }
 

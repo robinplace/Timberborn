@@ -81,7 +81,7 @@ class Sky(
 	public float DAY_SECONDS => day_night_cycle.DayLengthInSeconds;
 	public float days_elapsed => (
 		day_night_cycle.DayNumber +
-		day_night_cycle.FluidSecondsPassedToday / day_night_cycle.DayLengthInSeconds
+		day_night_cycle.FluidSecondsPassedToday / DAY_SECONDS
 	);
 
 	public void Load() {
@@ -94,7 +94,7 @@ class Sky(
 		orientor.transform.localRotation = pole_rotation;
 		pole_ray.transform.SetParent(orientor.transform, false);
 
-		var sky_time = days_elapsed + 3.5f / 24f;
+		var sky_time = (days_elapsed + 3.5f / 24f) * DAY_SECONDS;
 
 		var SUN_PERIOD = DAY_SECONDS;
 		sun_rotator.transform.SetParent(orientor.transform, false);
@@ -152,13 +152,13 @@ class Sky(
 			var vmag = float.Parse(star_json.Value<string>("Vmag")!);
 			var star = GameObject.CreatePrimitive(PrimitiveType.Cube);
 			int YEARS_IN_FUTURE = 20 * 1000;
-			var vector = Quaternion.Euler(dec + pm_dec * YEARS_IN_FUTURE, ra + pm_ra * YEARS_IN_FUTURE, 0);
+			var vector = Quaternion.Euler(0 - (dec + pm_dec * YEARS_IN_FUTURE), 0 - (ra + pm_ra * YEARS_IN_FUTURE), 0);
 			star.transform.localPosition = vector * Vector3.forward * 1200f;
 			if (hr > 0) {
 				star_map.Add(hr, star.transform.localPosition);
 			}
 			//star.transform.localScale = Vector3.one * (float) Math.Max(0, Math.Pow(10, -0.4 * vmag)) * 100f;
-			star.transform.localScale = Vector3.one * (float) Math.Max(0, 7f - vmag) * 1.1f;
+			star.transform.localScale = Vector3.one * (float) Math.Max(0, 7f - vmag) * 0.8f;
 			star.GetComponent<Renderer>().material = star_material;
 			star.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
 			star.GetComponent<Renderer>().receiveShadows = false;
@@ -203,7 +203,7 @@ class Sky(
 		}
 
 		Debug.Log($"fov {camera_service._camera.fieldOfView}");
-		camera_service._camera.fieldOfView = 50f;
+		camera_service._camera.fieldOfView = Mathf.Max(50f, camera_service._camera.fieldOfView);
 
 		sun.layer = Layers.IgnoreRaycastMask;
 		var sunMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
@@ -214,7 +214,7 @@ class Sky(
 		sun.layer = SKY_LAYER;
 		sun.transform.localScale = new Vector3(30f, 30f, 30f);
 		sun.transform.SetParent(sun_rotator.transform, false);
-		sun.transform.localPosition = sun_ray.transform.localRotation * Vector3.up * 800f / 3;
+		sun.transform.localPosition = sun_ray.transform.localRotation * Vector3.up * 800f * (Utility.DEBUG ? 0.3f : 1);
 
 		moon.layer = Layers.IgnoreRaycastMask;
 		var moonMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
@@ -227,7 +227,7 @@ class Sky(
 		moon.layer = SKY_LAYER;
 		moon.transform.localScale = new Vector3(22.5f, 22.5f, 22.5f);
 		moon.transform.SetParent(moon_rotator.transform, false);
-		moon.transform.localPosition = moon_ray.transform.localRotation * Vector3.up * 600f / 3;
+		moon.transform.localPosition = moon_ray.transform.localRotation * Vector3.up * 600f * (Utility.DEBUG ? 0.3f : 1);
 
 		var MOON_PHASE_PERIOD = SUN_PERIOD * MOON_PERIOD / (SUN_PERIOD - MOON_PERIOD);
 		var moon_animation = moon.AddComponent<Animation>();
@@ -307,7 +307,7 @@ class Sky(
 		}*/
 
 		star_material.color = new Color(1, 1, 1, Mathf.Lerp(1, 0.1f, sun_relevance));
-		constellation_material.color = new Color(1, 1, 1, Mathf.Lerp(0.1f, 0.05f, sun_relevance));
+		constellation_material.color = new Color(1, 1, 1, Mathf.Lerp(0.06f, 0.03f, sun_relevance));
 	}
 }
 

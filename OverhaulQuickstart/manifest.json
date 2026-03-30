@@ -1,6 +1,6 @@
 {
 	"Name": "Overhaul Quickstart",
-	"Version": "0.5",
+	"Version": "0.6",
 	"Id": "Robin.OverhaulQuickstart",
 	"MinimumGameVersion": "0.0.0.0",
 	"Description": "Instantly loads the most recent save.",

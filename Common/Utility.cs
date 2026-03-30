@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System;
 
 public class Utility {
-	public static bool DEBUG = true;
+	public static bool DEBUG = false;
 
 	public delegate void Transformer(Transform transform);
 
